@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:m="http://code.google.com/p/gmaps4jsf/">
+<h:head>
+	<title>Home</title>
+	<script type="text/javascript"
+		src="https://maps.googleapis.com/maps/api/js?sensor=true" />
+	<script type="text/javascript">
+		var directionsDisplay;
+		var directionsService = new google.maps.DirectionsService();
+		var map;
+		count = -1;
+
+		function initialize() {
+			directionsDisplay = new google.maps.DirectionsRenderer();
+			var sjc = new google.maps.LatLng(-23.179080, -45.887248);
+			var mapOptions = {
+				zoom : 12,
+				mapTypeId : google.maps.MapTypeId.ROADMAP,
+				center : sjc
+			}
+			map = new google.maps.Map(document.getElementById('map'),
+					mapOptions);
+			directionsDisplay.setMap(map);
+		}
+
+		function calcRoute() {
+			var origins = [ "Terminal Urbano Central, São José dos Campos, SP",
+					"Praça Afonso Pena, São José dos Campos, SP" ];
+			var destinations = [
+					"Rua Antônio Barbosa de Oliveira, São José dos Campos, SP",
+					"Rua Dr. Pedro Luiz de Oliveira Costa, São José dos Campos, SP" ];
+			count += 1;
+			if (count > 1) {
+				count = 0;
+			}
+			var request = {
+				origin : origins[count],
+				destination : destinations[count],
+				travelMode : google.maps.DirectionsTravelMode.TRANSIT
+			};
+			directionsService.route(request, function(response, status) {
+				if (status == google.maps.DirectionsStatus.OK) {
+					directionsDisplay.setDirections(response);
+				}
+			});
+		}
+	</script>
+</h:head>
+<h:body onload="initialize()">
+	<p:layout fullPage="true">
+		<p:layoutUnit position="north" size="100">
+			<br />
+			<h:outputText value="Ônibus de São José dos Campos, SP - FATEC"
+				style="font-family: arial; font-size: 200%; font-style: italic" />
+		</p:layoutUnit>
+		<p:layoutUnit position="south" size="50">
+			<h:outputText
+				value="₢ Direitos reservados à Bruno Henrique e Alexandre Wataya"
+				style="font-family: arial" />
+		</p:layoutUnit>
+		<p:layoutUnit position="west" size="300" header="Selecione uma linha:"
+			collapsible="true">
+			<h:form id="formList">
+				<p:selectOneListbox style="width: 270px" itemValue="#{linha}"
+					id="linhas">
+					<f:selectItems value="#{onibus.linhas}" var="linha"
+						itemValue="#{linha}" />
+				</p:selectOneListbox>
+				<p:commandButton value="Pesquisar" onclick="javascript:calcRoute();"
+					icon="ui-icon-check" style="margin:0" ajax="true" />
+			</h:form>
+		</p:layoutUnit>
+		<p:layoutUnit position="east" size="300" header="Diga onde você está:"
+			collapsible="true">
+			<h:form id="formPanel">
+				<h:outputLabel for="local" value="Local: " />
+				<p:inputText id="local" value="#{onibus.local}" />
+				<p:commandButton value="Pesquisar"
+					actionListener="#{onibus.pesquisarRua}" icon="ui-icon-check"
+					style="margin:0" update="panelOnibus" />
+				<br />
+				<br />
+				<p:panelGrid columns="1" id="panelOnibus">
+					<f:facet name="header">
+		Ônibus que passam:
+	</f:facet>
+				</p:panelGrid>
+			</h:form>
+		</p:layoutUnit>
+		<p:layoutUnit position="center">
+			<div id="map" style="width: 100%; height: 100%;"></div>
+		</p:layoutUnit>
+	</p:layout>
+</h:body>
+</html>
